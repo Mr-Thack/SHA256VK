@@ -1,6 +1,6 @@
 from kp import Manager, Tensor, Algorithm, OpBase, OpAlgoDispatch, OpTensorSyncLocal, OpTensorSyncDevice, OpTensorSyncLocal
 from itertools import chain
-from numpy import int32, uint32, array
+import numpy as np
 
 def chain_lists(*args):
     return list(chain.from_iterable(args))
@@ -13,16 +13,17 @@ def get_alg(mgr, data, shader_name):
     return mgr.algorithm(tensors=data, spirv=get_shader(shader_name))
 
 def arr(mgr, data, dtype):
-    return mgr.tensor(array(data, dtype=dtype))
+    return mgr.tensor_t(np.array(data, dtype=dtype))
 
 def run_algorithm(mgr, data, output_len, shader_name, dtype):
-    # Sequence of operations. However, if written properly, this can be done in 1 operation
+    # Sequence of operations. However, if wVulkanritten properly, this can be done in 1 operation
     sq = mgr.sequence()
-   
+
+
     if dtype == "uint32":
-        dtype = uint32
+        dtype = np.uint32
     elif dtype == "int32":
-        dtype = int32
+        dtype = np.int32
     else:
         print("Somethign is wrong with data type")
         quit()
@@ -35,8 +36,6 @@ def run_algorithm(mgr, data, output_len, shader_name, dtype):
    
     mem = chain_lists(data, [output])
    
-    for tensor in mem:
-        print(tensor.data())
     # Sync data from RAM to device
     sq.eval(OpTensorSyncDevice(mem))
     
