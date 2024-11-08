@@ -55,6 +55,26 @@ uint gamma1(uint x) {
     return rotr(x, 17) ^ rotr(x, 19) ^ (x >> 10);
 }
 
+// Assume `data` is an input array holding the message as bytes
+// `dataLength` is the original length of the data in bytes
+// `paddedData` will hold the padded data
+void applyPadding(inout uint paddedData[], uint dataLength) {
+    uint paddedLength = (dataLength + 9 + 63) & ~uint(63); // Round up to nearest multiple of 64
+
+    // Copy the original data into paddedData
+    for (uint i = 0; i < dataLength; ++i) {
+        paddedData[i >> 2] |= uint(data[i]) << ((3 - (i & 3)) * 8);
+    }
+
+    // Append the '1' bit after the message
+    paddedData[dataLength >> 2] |= uint(0x80) << ((3 - (dataLength & 3)) * 8);
+
+    // Write the original message length in bits in the last 64 bits of paddedData
+    uint bitLength = dataLength * 8u;
+    paddedData[(paddedLength / 4) - 2] = bitLength >> 32;
+    paddedData[(paddedLength / 4) - 1] = bitLength & 0xFFFFFFFFu;
+}
+
 void main() {
     // Initialize hash values for this block
     uint h[8];

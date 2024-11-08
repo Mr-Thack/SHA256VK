@@ -29,6 +29,7 @@ def sha256_padding(input_string):
     padding_length = (56 - (message_length + 1) % 64) % 64
     total_length = message_length + 1 + padding_length + 8  # Includes 8 bytes for the length
 
+    print(message_bytes)
     # Step 3: Create padded byte array
     padded_message = bytearray(message_bytes)
     padded_message.append(0x80)  # Append the '1' bit as 0x80
@@ -44,19 +45,29 @@ def sha256_padding(input_string):
 
     return padded_array
 
-# Example usage
+def numpy_uint32_to_hex(numpy_array):
+    # Check if the array is of type uint32
+    if numpy_array.dtype != np.uint32:
+        return "The numpy array should have dtype=np.uint32 for this conversion."
+    
+    # Cast the numpy array to uint8 and convert to bytes
+    byte_array = numpy_array.view(np.uint8).tobytes()
+
+    # Convert the byte array to a hex string
+    hex_string = byte_array.hex()
+    return hex_string
+
 input_string = "hello world"
 padded_tensor = sha256_padding(input_string)
-print("Padded Tensor:\n", padded_tensor)
 
 
 # Initialize Kompute Manager
 mgr = make_manager()
 
-res = run_algorithm(mgr, [a, b], 8, "adding", "uint32")
+res = run_algorithm(mgr, [padded_tensor], 8, "alg", "uint32")
 
 # Output the result
-print("Result:", res.data())
+print("Result:", numpy_uint32_to_hex(res.data()))
 
 # Clean up resources
 mgr.destroy()
