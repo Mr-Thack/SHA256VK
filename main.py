@@ -1,7 +1,9 @@
 #!/usr/bin/python
-from gpu import make_manager, run_algorithm
 import hashlib
 import numpy as np 
+from kp import Manager, Tensor, Buffer, Algorithm, OpBase, OpAlgoDispatch, OpTensorSyncLocal, OpTensorSyncDevice, OpTensorSyncLocal
+
+
 
 def compare_sha256 ( res : bytes, data : bytes ) -> bool:
     """
@@ -33,16 +35,36 @@ def numpy_uint32_to_hex(numpy_array):
     return hex_string
 
 
+dtype = np.uint32
+buftype = Buffer.DeviceType.SHARED
 
 input_string = "hello world"
 
 # Initialize Kompute Manager
-mgr = make_manager()
+mgr = Manager()
 
-res = run_algorithm(mgr, [padded_tensor], 8, "alg", "uint32")
+# Initial data 
+input_data = np.array(input_string.decode('utf-8'), dtype=dtype)
+
+# This is the hash state, and will be used to store the ouput 
+chain = np.zeros(8, dtype=dtype)
+
+chain_buffer = Buffer(manager, chain, buftype)
+block_buffer = Buffer(manager, np.zeros(16, dtype=dtype), buftype) 
+offset_buffer = Buffer(manager, np.array([0], dtype=dtype), buftype) 
+length_buffer = Buffer(manager, np.array([len(input_data) * 4], dtype=dtype), buftype) 
+data_buffer = Buffer(manager, input_data, buftype) 
+
+
+sq = mgr.sequence()
+
+
+
+
+# res = run_algorithm(mgr, [padded_tensor], 8, "alg", "uint32")
 
 # Output the result
-print("Result:", numpy_uint32_to_hex(res.data()))
+# print("Result:", numpy_uint32_to_hex(res.data()))
 
 # Clean up resources
 mgr.destroy()

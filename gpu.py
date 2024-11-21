@@ -2,6 +2,9 @@ from kp import Manager, Tensor, Algorithm, OpBase, OpAlgoDispatch, OpTensorSyncL
 from itertools import chain
 import numpy as np
 
+
+
+
 def chain_lists(*args):
     return list(chain.from_iterable(args))
 
